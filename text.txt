@@ -1,0 +1,3 @@
+ali;maths;4;english;5;chemistry;5;physics;4;
+egor;maths;2;english;4;chemistry;5;physics;3;
+kate;maths;3;english;4;chemistry;3;physics;3;
