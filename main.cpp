@@ -4,6 +4,7 @@
 #include <fstream>
 #include <locale>
 #include <string>
+#include <cmath>
 
 using namespace std;
 
@@ -68,6 +69,75 @@ istream& operator >> (istream& in, vector<student>& stud_1)
     return in;
 }
 
+vector<student>std3;
+ofstream file_bin("text.bin", ios::binary);
+void write(string& file_bin, vector<student> &std3)
+{
+    ofstream out(file_bin, ios::binary | ios::trunc);
+    if (out.is_open())
+    {
+        {
+            int nstud = std3.size();
+            out.write(reinterpret_cast<char*>(&nstud), sizeof(int));
+
+            int nsub = std3[0].sub_vector.size();
+            out.write(reinterpret_cast<char*>(&nsub), sizeof(int));
+
+            for (int i = 0; i < nsub; i++) {
+                int size = std3[0].sub_vector[i].name_of_subject.length();
+                out.write(reinterpret_cast<char*>(&size), sizeof(int));
+                out.write(std3[0].sub_vector[i].name_of_subject.c_str(), size);
+            }
+
+            for (int i = 0; i < nstud; i++) {
+                int name = std3[i].name.length();
+                out.write(reinterpret_cast<char*>(&name), sizeof(int));
+                out.write(std3[i].name.c_str(), name);
+                for (int j = 0; j < nsub; j++)
+                    out.write(reinterpret_cast<char*>(&std3[i].sub_vector[j].grade), sizeof(int));
+            }
+
+            out.close();
+        }
+    }
+}
+
+void read(fstream& file3, vector<student> &std3)
+{
+        int nstud = 0;
+        file3.read(reinterpret_cast<char*>(&nstud), sizeof(int));
+        std3.resize(nstud);
+
+        int nsub = 0;
+        file3.read(reinterpret_cast<char*>(&nsub), sizeof(int));
+
+        vector<string> subj (nsub);
+        for (int i = 0; i < nsub; i++)
+        {
+            int size=0;
+            file3.read(reinterpret_cast<char*>(&size), sizeof(int));
+            char* name = new char [size];
+            file3.read(name, size);
+            subj[i] = static_cast<string>(name);
+        }
+
+        for (int i = 0; i < nstud; i++)
+        {
+            int name_b = 0;
+            file3.read(reinterpret_cast<char*>(&name_b), sizeof(int));
+            char* name = new char [name_b];
+            file3.read(name, name_b);
+            std3[i].name = static_cast<string>(name);
+            std3[i].sub_vector.resize(nsub);
+            for (int j = 0; j < nsub; j++)
+            {
+                std3[i].sub_vector[j].name_of_subject = subj[j];
+                file3.read(reinterpret_cast<char*>(&std3[i].sub_vector[j].grade), sizeof(int));
+            }
+        }
+}
+
+
 bool sorting (student stud1, student stud2)
 {
     if (stud1.name > stud2.name)
@@ -129,5 +199,19 @@ int main()
     }
     cout<<badst<<endl;
 
+    string file_bin;
+    string nfile;
+    fstream file3("text_bin.bin", ios::binary);
+    //string file3;
+
+
+
+
+    file3.open(nfile, ios::in | ios:: binary);
+    if (file3.is_open())
+        read(file3, std3);
+    else cout << "error";
+
+    write(file_bin, std3);
     return 0;
 }
